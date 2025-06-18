@@ -20,8 +20,8 @@ program
   .option('-o, --output [/dev/stdout]', 'file to write output to')
   .option('-f, --fontName [value]', 'the font family name you want [iconfont]')
   .option('-i, --fontId [value]', 'the font id you want [fontName]')
-  .option('-st, --style [value]', 'the font style you want')
-  .option('-we, --weight [value]', 'the font weight you want')
+  .option('-t, --style [value]', 'the font style you want')
+  .option('-e, --weight [value]', 'the font weight you want')
   .option(
     '-w, --fixedWidth',
     'creates a monospace font of the width of the largest input icon'
@@ -69,6 +69,7 @@ program
     parseInt
   )
   .option('-m, --metadata', 'content of the metadata tag')
+  .argument('[files...]', 'Icon files to merge')
   .parse(argv);
 
 if (!program.args.length) {

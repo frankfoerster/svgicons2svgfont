@@ -12,7 +12,7 @@ import { BufferStream } from 'bufferstreams';
 
 try {
   await mkdir(join('fixtures', 'results'));
-} catch (err) {
+} catch {
   // empty
 }
 

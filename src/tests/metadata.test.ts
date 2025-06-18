@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 try {
   await mkdir(join('fixtures', 'results'));
-} catch (err) {
+} catch {
   // empty
 }
 

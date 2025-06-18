@@ -1,7 +1,6 @@
 import { Transform } from 'stream';
 import Sax from 'sax';
-import { SVGPathData } from 'svg-pathdata';
-import svgShapesToPath from './svgshapes2svgpath.js';
+import { SVGPathData, SVGShapes } from 'svg-pathdata';
 import {
   type Matrix,
   scale,
@@ -148,7 +147,7 @@ export class SVGIcons2SVGFontStream extends Transform {
     const parents: (Sax.Tag | Sax.QualifiedTag)[] = [];
     const transformStack: Matrix[] = [];
 
-    function applyTransform(d) {
+    function applyTransform(d: string) {
       const last = transformStack[transformStack.length - 1];
       if (!last) return new SVGPathData(d);
       return new SVGPathData(d).matrix(
@@ -306,39 +305,96 @@ export class SVGIcons2SVGFontStream extends Transform {
           );
         } else if ('rect' === tag.name && 'none' !== tag.attributes.fill) {
           glyph.paths.push(
-            applyTransform(svgShapesToPath.rectToPath(tag.attributes)),
+            applyTransform(
+              SVGShapes.createRect(
+                tag.attributes.x ? parseFloat(tag.attributes.x as string) : 0,
+                tag.attributes.y ? parseFloat(tag.attributes.y as string) : 0,
+                tag.attributes.width
+                  ? parseFloat(tag.attributes.width as string)
+                  : 0,
+                tag.attributes.height
+                  ? parseFloat(tag.attributes.height as string)
+                  : 0,
+                tag.attributes.rx
+                  ? parseFloat(tag.attributes.rx as string)
+                  : tag.attributes.ry
+                    ? parseFloat(tag.attributes.ry as string)
+                    : 0,
+                tag.attributes.ry
+                  ? parseFloat(tag.attributes.ry as string)
+                  : tag.attributes.rx
+                    ? parseFloat(tag.attributes.rx as string)
+                    : 0,
+              ).encode(),
+            ),
           );
         } else if ('line' === tag.name && 'none' !== tag.attributes.fill) {
           warn(
             `🤷 - Found a line element in the icon "${glyph.name}" the result could be different than expected.`,
           );
           glyph.paths.push(
-            applyTransform(svgShapesToPath.lineToPath(tag.attributes)),
+            applyTransform(
+              SVGShapes.createPolyline([
+                tag.attributes.x1 ? parseFloat(tag.attributes.x1 as string) : 0,
+                tag.attributes.y1 ? parseFloat(tag.attributes.y1 as string) : 0,
+                tag.attributes.x2 ? parseFloat(tag.attributes.x2 as string) : 0,
+                tag.attributes.y2 ? parseFloat(tag.attributes.y2 as string) : 0,
+              ]).encode(),
+            ),
           );
         } else if ('polyline' === tag.name && 'none' !== tag.attributes.fill) {
           warn(
             `🤷 - Found a polyline element in the icon "${glyph.name}" the result could be different than expected.`,
           );
           glyph.paths.push(
-            applyTransform(svgShapesToPath.polylineToPath(tag.attributes)),
+            applyTransform(
+              SVGShapes.createPolyline(
+                ((tag.attributes.points as string) || '')
+                  .split(/\s/gm)
+                  .map((coord) => coord.split(',').map((n) => parseFloat(n)))
+                  .flat(),
+              ).encode(),
+            ),
           );
         } else if ('polygon' === tag.name && 'none' !== tag.attributes.fill) {
           glyph.paths.push(
-            applyTransform(svgShapesToPath.polygonToPath(tag.attributes)),
+            applyTransform(
+              SVGShapes.createPolygon(
+                ((tag.attributes.points as string) || '')
+                  .split(/\s/gm)
+                  .map((coord) => coord.split(',').map((n) => parseFloat(n)))
+                  .flat(),
+              ).encode(),
+            ),
           );
         } else if (
           ['circle', 'ellipse'].includes(tag.name) &&
           'none' !== tag.attributes.fill
         ) {
           glyph.paths.push(
-            applyTransform(svgShapesToPath.circleToPath(tag.attributes)),
+            applyTransform(
+              SVGShapes.createEllipse(
+                tag.attributes.rx
+                  ? parseFloat(tag.attributes.rx as string)
+                  : tag.attributes.r
+                    ? parseFloat(tag.attributes.r as string)
+                    : 0,
+                tag.attributes.ry
+                  ? parseFloat(tag.attributes.ry as string)
+                  : tag.attributes.r
+                    ? parseFloat(tag.attributes.r as string)
+                    : 0,
+                tag.attributes.cx ? parseFloat(tag.attributes.cx as string) : 0,
+                tag.attributes.cy ? parseFloat(tag.attributes.cy as string) : 0,
+              ).encode(),
+            ),
           );
         } else if (
           'path' === tag.name &&
           tag.attributes.d &&
           'none' !== tag.attributes.fill
         ) {
-          glyph.paths.push(applyTransform(tag.attributes.d));
+          glyph.paths.push(applyTransform(tag.attributes.d as string));
         }
 
         // According to http://www.w3.org/TR/SVG/painting.html#SpecifyingPaint

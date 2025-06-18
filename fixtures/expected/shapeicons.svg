@@ -9,13 +9,13 @@
     <missing-glyph horiz-adv-x="0" />
     <glyph glyph-name="circle"
       unicode="&#xE001;"
-      horiz-adv-x="150" d="M55 100A20 20 0 0 1 95 100A20 20 0 0 1 55 100M55 50A20 20 0 0 1 95 50A20 20 0 0 1 55 50" />
+      horiz-adv-x="150" d="M95 100A20 20 0 1 0 55 100A20 20 0 1 0 95 100zM95 50A20 20 0 1 0 55 50A20 20 0 1 0 95 50z" />
     <glyph glyph-name="ellipse"
       unicode="&#xE002;"
-      horiz-adv-x="150" d="M55 100A20 30 0 0 1 95 100A20 30 0 0 1 55 100M45 50A30 20 0 0 1 105 50A30 20 0 0 1 45 50" />
+      horiz-adv-x="150" d="M95 100A20 30 0 1 0 55 100A20 30 0 1 0 95 100zM105 50A30 20 0 1 0 45 50A30 20 0 1 0 105 50z" />
     <glyph glyph-name="lines"
       unicode="&#xE003;"
-      horiz-adv-x="150" d="M10 120L11 119L141 59L140 60z" />
+      horiz-adv-x="150" d="M10 120L140 60" />
     <glyph glyph-name="polygon"
       unicode="&#xE004;"
       horiz-adv-x="150" d="M10 120L10 60L140 60L140 120z" />
@@ -24,7 +24,7 @@
       horiz-adv-x="150" d="M10 120L10 60L140 60L140 120L10 120" />
     <glyph glyph-name="rect"
       unicode="&#xE006;"
-      horiz-adv-x="150" d="M10 60H140V30H10V60z" />
+      horiz-adv-x="150" d="M10 60L140 60L140 30L10 30z" />
   </font>
 </defs>
 </svg>
