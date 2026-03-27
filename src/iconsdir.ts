@@ -10,21 +10,21 @@ import debug from 'debug';
 
 const warn = debug('svgicons2svgfont');
 
-export type SVGIconsDirStreamOptions = {
+export interface SVGIconsDirStreamOptions {
   metadataProvider: ReturnType<typeof getMetadataService>;
-};
+}
 export type SVGIconStream = Readable & {
   metadata: Pick<FileMetadata, 'name' | 'unicode'>;
 };
 
 class SVGIconsDirStream extends Readable {
   private _options: SVGIconsDirStreamOptions & Partial<MetadataServiceOptions>;
-  gotFilesInfos: boolean = false;
+  gotFilesInfos = false;
   fileInfos: FileMetadata[] = [];
   dir: string;
 
   constructor(
-    dir: string[],
+    dir: string[] | string,
     options: Partial<SVGIconsDirStreamOptions & MetadataServiceOptions>,
   ) {
     super({ objectMode: true });
@@ -39,7 +39,7 @@ class SVGIconsDirStream extends Readable {
       this.dir = dir;
     }
   }
-  _getFilesInfos(files) {
+  _getFilesInfos(files: string[]) {
     let filesProcessed = 0;
 
     this.fileInfos = [];

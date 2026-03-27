@@ -1,5 +1,5 @@
 import { Transform } from 'stream';
-import Sax from 'sax';
+import Sax, { type Tag } from 'sax';
 import { SVGPathData, SVGShapes } from 'svg-pathdata';
 import {
   type Matrix,
@@ -12,6 +12,7 @@ import {
 
 import { YError } from 'yerror';
 import debug from 'debug';
+import { SVGIconStream } from './iconsdir.js';
 
 const warn = debug('svgicons2svgfont');
 
@@ -19,14 +20,16 @@ export { fileSorter } from './filesorter.js';
 export * from './iconsdir.js';
 export * from './metadata.js';
 
-function matrixFromTransformAttribute(transformAttributeString): Matrix {
+function matrixFromTransformAttribute(
+  transformAttributeString: string,
+): Matrix {
   return compose(
     fromDefinition(fromTransformAttribute(transformAttributeString)),
   );
 }
 
 // Rendering
-function tagShouldRender(curTag, parents) {
+function tagShouldRender(curTag: Tag, parents: Tag[]) {
   let values;
 
   return !parents.some((tag) => {
@@ -61,14 +64,13 @@ function tagShouldRender(curTag, parents) {
 // According to the document (http://www.w3.org/TR/SVG/painting.html#FillProperties)
 // fill <paint> none|currentColor|inherit|<color>
 //     [<icccolor>]|<funciri> (not support yet)
-function getTagColor(currTag, parents) {
+function getTagColor(currTag: Tag, parents: Tag[]) {
   const defaultColor = 'black';
   const fillVal = currTag.attributes.fill;
-  let color;
   const parentsLength = parents.length;
 
   if ('none' === fillVal) {
-    return color;
+    return 'none';
   }
   if ('currentColor' === fillVal) {
     return defaultColor;
@@ -91,7 +93,7 @@ function getTagColor(currTag, parents) {
   return fillVal;
 }
 
-export type SVGIcons2SVGFontStreamOptions = {
+export interface SVGIcons2SVGFontStreamOptions {
   fontName: string;
   fontId: string;
   fixedWidth: boolean;
@@ -104,21 +106,22 @@ export type SVGIcons2SVGFontStreamOptions = {
   preserveAspectRatio?: boolean;
   centerHorizontally?: boolean;
   centerVertically?: boolean;
-  fontWeight?: number;
+  fontWeight?: number | string;
   fontHeight?: number;
   fontStyle?: string;
   callback?: (glyphs: Glyph[]) => void;
-};
+}
 
-export type Glyph = {
+export interface Glyph {
   name: string;
+  color?: string;
   width: number;
   height: number;
-  defaultHeight?: number;
-  defaultWidth?: number;
+  defaultHeight?: number | boolean;
+  defaultWidth?: number | boolean;
   unicode: string[];
   paths?: SVGPathData[];
-};
+}
 
 export class SVGIcons2SVGFontStream extends Transform {
   private _options: SVGIcons2SVGFontStreamOptions;
@@ -141,7 +144,11 @@ export class SVGIcons2SVGFontStream extends Transform {
     };
   }
 
-  _transform(svgIconStream, _unused, svgIconStreamCallback) {
+  _transform(
+    svgIconStream: SVGIconStream,
+    _unused: unknown,
+    svgIconStreamCallback: () => undefined,
+  ) {
     // Parsing each icons asynchronously
     const saxStream = Sax.createStream(true);
     const parents: (Sax.Tag | Sax.QualifiedTag)[] = [];
@@ -160,7 +167,7 @@ export class SVGIcons2SVGFontStream extends Transform {
       );
     }
 
-    const glyph = svgIconStream.metadata || {};
+    const glyph: Glyph = (svgIconStream.metadata || {}) as Glyph;
 
     // init width and height os they aren't undefined if <svg> isn't renderable
     glyph.width = 0;
@@ -239,7 +246,7 @@ export class SVGIcons2SVGFontStream extends Transform {
 
         if ('undefined' !== typeof tag.attributes.transform) {
           const transform = matrixFromTransformAttribute(
-            tag.attributes.transform,
+            tag.attributes.transform as string,
           );
           transformStack.push(
             compose([currentTransform, transform].filter(Boolean)),
@@ -248,7 +255,7 @@ export class SVGIcons2SVGFontStream extends Transform {
           transformStack.push(currentTransform);
         }
         // Checking if any parent rendering is disabled and exit if so
-        if (!tagShouldRender(tag, parents)) {
+        if (!tagShouldRender(tag as Tag, parents as Tag[])) {
           return;
         }
 
@@ -304,7 +311,7 @@ export class SVGIcons2SVGFontStream extends Transform {
             `🤷 - Found a clipPath element in the icon "${glyph.name}" the result may be different than expected.`,
           );
         } else if ('rect' === tag.name && 'none' !== tag.attributes.fill) {
-          glyph.paths.push(
+          glyph.paths?.push(
             applyTransform(
               SVGShapes.createRect(
                 tag.attributes.x ? parseFloat(tag.attributes.x as string) : 0,
@@ -332,7 +339,7 @@ export class SVGIcons2SVGFontStream extends Transform {
           warn(
             `🤷 - Found a line element in the icon "${glyph.name}" the result could be different than expected.`,
           );
-          glyph.paths.push(
+          glyph.paths?.push(
             applyTransform(
               SVGShapes.createPolyline([
                 tag.attributes.x1 ? parseFloat(tag.attributes.x1 as string) : 0,
@@ -346,7 +353,7 @@ export class SVGIcons2SVGFontStream extends Transform {
           warn(
             `🤷 - Found a polyline element in the icon "${glyph.name}" the result could be different than expected.`,
           );
-          glyph.paths.push(
+          glyph.paths?.push(
             applyTransform(
               SVGShapes.createPolyline(
                 ((tag.attributes.points as string) || '')
@@ -357,7 +364,7 @@ export class SVGIcons2SVGFontStream extends Transform {
             ),
           );
         } else if ('polygon' === tag.name && 'none' !== tag.attributes.fill) {
-          glyph.paths.push(
+          glyph.paths?.push(
             applyTransform(
               SVGShapes.createPolygon(
                 ((tag.attributes.points as string) || '')
@@ -371,7 +378,7 @@ export class SVGIcons2SVGFontStream extends Transform {
           ['circle', 'ellipse'].includes(tag.name) &&
           'none' !== tag.attributes.fill
         ) {
-          glyph.paths.push(
+          glyph.paths?.push(
             applyTransform(
               SVGShapes.createEllipse(
                 tag.attributes.rx
@@ -394,13 +401,13 @@ export class SVGIcons2SVGFontStream extends Transform {
           tag.attributes.d &&
           'none' !== tag.attributes.fill
         ) {
-          glyph.paths.push(applyTransform(tag.attributes.d as string));
+          glyph.paths?.push(applyTransform(tag.attributes.d as string));
         }
 
         // According to http://www.w3.org/TR/SVG/painting.html#SpecifyingPaint
         // Map attribute fill to color property
         if ('none' !== tag.attributes.fill) {
-          color = getTagColor(tag, parents);
+          color = getTagColor(tag as Tag, parents as Tag[]);
           if ('undefined' !== typeof color) {
             glyph.color = color;
           }
@@ -431,7 +438,7 @@ export class SVGIcons2SVGFontStream extends Transform {
     svgIconStream.pipe(saxStream);
   }
 
-  _flush(svgFontFlushCallback) {
+  _flush(svgFontFlushCallback: () => void) {
     this.glyphs.forEach((glyph) => {
       if (
         glyph.defaultHeight ||
@@ -548,7 +555,7 @@ export class SVGIcons2SVGFontStream extends Transform {
         : fontHeight / maxGlyphHeight;
 
       if (!isFinite(ratio)) {
-        throw new YError('E_BAD_COMPUTED_RATIO', ratio);
+        throw new YError('E_BAD_COMPUTED_RATIO', [ratio]);
       }
 
       glyph.width *= ratio;
@@ -606,7 +613,7 @@ export class SVGIcons2SVGFontStream extends Transform {
         const unicodeStr = [...unicode]
           .map(
             (char) =>
-              '&#x' + char.codePointAt(0)!.toString(16).toUpperCase() + ';',
+              '&#x' + char.codePointAt(0)?.toString(16).toUpperCase() + ';',
           )
           .join('');
 

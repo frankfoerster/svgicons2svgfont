@@ -1,11 +1,13 @@
 import { describe, test, expect } from '@jest/globals';
-import assert from 'assert';
 import { Readable } from 'node:stream';
 import fs from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SVGIcons2SVGFontStream } from '../index.js';
+import {
+  SVGIcons2SVGFontStream,
+  type SVGIcons2SVGFontStreamOptions,
+} from '../index.js';
 import { SVGIconsDirStream, type SVGIconStream } from '../iconsdir.js';
 import streamtest from 'streamtest';
 import { BufferStream } from 'bufferstreams';
@@ -21,20 +23,24 @@ const codepoint = JSON.parse(
 );
 
 // Helpers
-async function generateFontToFile(options, fileSuffix?, startUnicode?, files?) {
+async function generateFontToFile(
+  options: Partial<SVGIcons2SVGFontStreamOptions>,
+  fileSuffix?: string,
+  startUnicode?: number,
+  files?: string[],
+) {
   const dest = join(
     'fixtures',
     'results',
     `${options.fontName + (fileSuffix || '')}.svg`,
   );
-  let resolve;
-  let reject;
+  let resolve: (value: unknown) => void;
+  let reject: (reason?: unknown) => void;
   const promise = new Promise((_resolve, _reject) => {
     resolve = _resolve;
     reject = _reject;
   });
 
-  options.log = () => {};
   options.round = options.round || 1e3;
 
   const svgFontStream = new SVGIcons2SVGFontStream(options);
@@ -51,25 +57,31 @@ async function generateFontToFile(options, fileSuffix?, startUnicode?, files?) {
           { encoding: 'utf8' },
         ),
       );
-      resolve();
+      resolve(undefined);
     } catch (err) {
       reject(err);
     }
   });
 
-  new SVGIconsDirStream(files || join('fixtures', 'icons', options.fontName), {
-    startUnicode: startUnicode || 0xe001,
-  }).pipe(svgFontStream);
+  new SVGIconsDirStream(
+    files || join('fixtures', 'icons', options.fontName as string),
+    {
+      startUnicode: startUnicode || 0xe001,
+    },
+  ).pipe(svgFontStream);
 
   return await promise;
 }
 
-async function generateFontToMemory(options, files?, startUnicode?) {
-  options.log = () => {};
+async function generateFontToMemory(
+  options: Partial<SVGIcons2SVGFontStreamOptions>,
+  files?: string[],
+  startUnicode?: number,
+) {
   options.round = options.round || 1e3;
 
   options.callback = (glyphs) => {
-    const fontName = options.fontName;
+    const fontName = options.fontName as string;
 
     expect(glyphs).toEqual(codepoint[fontName]);
   };
@@ -77,9 +89,12 @@ async function generateFontToMemory(options, files?, startUnicode?) {
   const svgFontStream = new SVGIcons2SVGFontStream(options);
   const promise = bufferStream(svgFontStream);
 
-  new SVGIconsDirStream(files || join('fixtures', 'icons', options.fontName), {
-    startUnicode: startUnicode || 0xe001,
-  }).pipe(svgFontStream);
+  new SVGIconsDirStream(
+    files || join('fixtures', 'icons', options.fontName as string),
+    {
+      startUnicode: startUnicode || 0xe001,
+    },
+  ).pipe(svgFontStream);
 
   expect((await promise).toString()).toEqual(
     fs.readFileSync(join('fixtures', 'expected', `${options.fontName}.svg`), {
@@ -137,7 +152,7 @@ describe('Generating fonts to files', () => {
   test('should work for codepoint mapped SVG icons', async () => {
     await generateFontToFile({
       fontName: 'prefixedicons',
-      callback: () => {},
+      callback: () => undefined,
     });
   });
 
@@ -538,8 +553,7 @@ describe('Passing code points', () => {
     svgFontStream.write(svgIconStream);
     svgFontStream.end();
 
-    assert.equal(
-      await promise,
+    expect((await promise).toString()).toEqual(
       fs.readFileSync(join('fixtures', 'expected', 'cleanicons-multi.svg'), {
         encoding: 'utf8',
       }),
@@ -561,8 +575,7 @@ describe('Passing code points', () => {
 
     svgFontStream.write(svgIconStream);
     svgFontStream.end();
-    assert.equal(
-      await promise,
+    expect((await promise).toString()).toEqual(
       fs.readFileSync(join('fixtures', 'expected', 'cleanicons-lig.svg'), {
         encoding: 'utf8',
       }),
@@ -585,8 +598,7 @@ describe('Passing code points', () => {
     svgFontStream.write(svgIconStream);
     svgFontStream.end();
 
-    assert.equal(
-      (await promise).toString(),
+    expect((await promise).toString()).toEqual(
       fs.readFileSync(join('fixtures', 'expected', 'cleanicons-high.svg'), {
         encoding: 'utf8',
       }),
@@ -606,9 +618,8 @@ describe('Providing bad glyphs', () => {
     };
     new SVGIcons2SVGFontStream({ round: 1e3 })
       .on('error', (err) => {
-        assert.equal(err instanceof Error, true);
-        assert.equal(
-          err.message,
+        expect(err instanceof Error).toBeTruthy();
+        expect(err.message).toEqual(
           'Please provide a name for the glyph at index 0',
         );
       })
@@ -626,9 +637,8 @@ describe('Providing bad glyphs', () => {
     };
     new SVGIcons2SVGFontStream({ round: 1e3 })
       .on('error', (err) => {
-        assert.equal(err instanceof Error, true);
-        assert.equal(
-          err.message,
+        expect(err instanceof Error).toBeTruthy();
+        expect(err.message).toEqual(
           'Please provide a codepoint for the glyph "test"',
         );
       })
@@ -646,9 +656,8 @@ describe('Providing bad glyphs', () => {
     };
     new SVGIcons2SVGFontStream({ round: 1e3 })
       .on('error', (err) => {
-        assert.equal(err instanceof Error, true);
-        assert.equal(
-          err.message,
+        expect(err instanceof Error).toBeTruthy();
+        expect(err.message).toEqual(
           'Given codepoints for the glyph "test" contain duplicates.',
         );
       })
@@ -675,9 +684,8 @@ describe('Providing bad glyphs', () => {
       unicode: '\uE002',
     };
     svgFontStream.on('error', (err) => {
-      assert.equal(err instanceof Error, true);
-      assert.equal(
-        err.message,
+      expect(err instanceof Error).toBeTruthy();
+      expect(err.message).toEqual(
         'The glyph "test2" codepoint seems to be used already elsewhere.',
       );
     });
@@ -703,8 +711,8 @@ describe('Providing bad glyphs', () => {
       unicode: '\uE002',
     };
     svgFontStream.on('error', (err) => {
-      assert.equal(err instanceof Error, true);
-      assert.equal(err.message, 'The glyph name "test" must be unique.');
+      expect(err instanceof Error).toBeTruthy();
+      expect(err.message).toEqual('The glyph name "test" must be unique.');
     });
     svgFontStream.write(svgIconStream);
     svgFontStream.write(svgIconStream2);
@@ -721,14 +729,13 @@ describe('Providing bad glyphs', () => {
     };
     new SVGIcons2SVGFontStream({ round: 1e3 })
       .on('error', (err) => {
-        assert.equal(err instanceof Error, true);
-        assert.equal(
-          err.message,
+        expect(err instanceof Error).toBeTruthy();
+        expect(err.message).toEqual(
           'Got an error parsing the glyph "test":' +
             ' Expected a flag, got "20" at index "23".',
         );
       })
-      .on('end', () => {})
+      .on('end', () => undefined)
       .write(svgIconStream);
   });
 
@@ -747,12 +754,11 @@ describe('Providing bad glyphs', () => {
 
     new SVGIcons2SVGFontStream({ round: 1e3 })
       .on('error', (err) => {
-        assert.equal(err instanceof Error, true);
+        expect(err instanceof Error).toBeTruthy();
 
         if (firstError) {
           firstError = false;
-          assert.equal(
-            err.message,
+          expect(err.message).toEqual(
             'Non-whitespace before first tag.\nLine: 0\nColumn: 1\nChar: b',
           );
         }

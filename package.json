@@ -79,6 +79,7 @@
     "@swc/cli": "^0.8.0",
     "@swc/core": "^1.15.21",
     "@swc/jest": "^0.2.39",
+    "@types/debug": "^4.1.13",
     "bufferstreams": "^5.0.0",
     "conventional-changelog": "^7.2.0",
     "eslint": "^10.1.0",

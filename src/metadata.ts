@@ -1,11 +1,11 @@
 import { join, dirname, basename } from 'node:path';
 import { rename } from 'node:fs';
 
-export type MetadataServiceOptions = {
+export interface MetadataServiceOptions {
   prependUnicode: boolean;
   startUnicode: number;
 };
-export type FileMetadata = {
+export interface FileMetadata {
   path: string;
   name: string;
   unicode: string[] | string;
