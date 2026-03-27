@@ -1,3 +1,15 @@
+# [16.0.0](https://github.com/nfroidure/svgicons2svgfont/compare/v15.0.1...v16.0.0) (2026-03-27)
+
+
+### chore
+
+* **dependencies:** update dependencies ([aa0ad75](https://github.com/nfroidure/svgicons2svgfont/commit/aa0ad75488b1a68800563d05beae4f9bdb78738f)), closes [#12](https://github.com/nfroidure/svgicons2svgfont/issues/12)
+
+
+### BREAKING CHANGES
+
+* **dependencies:** The short flags changed to adapt to commander changes. Now only support Node22+.
+
 ## [15.0.1](https://github.com/nfroidure/svgicons2svgfont/compare/v15.0.0...v15.0.1) (2025-02-26)
 
 
