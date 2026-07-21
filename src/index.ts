@@ -146,7 +146,7 @@ export class SVGIcons2SVGFontStream extends Transform {
     _unused: unknown,
     svgIconStreamCallback: () => undefined,
   ) {
-    // Parsing each icons asynchronously
+    // Parsing each icon asynchronously
     const saxStream = Sax.createStream(true);
     const parents: (Sax.Tag | Sax.QualifiedTag)[] = [];
     const transformStack: Matrix[] = [];
@@ -401,8 +401,8 @@ export class SVGIcons2SVGFontStream extends Transform {
           glyph.paths?.push(applyTransform(tag.attributes.d as string));
         }
 
-        // According to http://www.w3.org/TR/SVG/painting.html#SpecifyingPaint
-        // Map attribute fill to color property
+        // According to https://www.w3.org/TR/SVG/painting.html#SpecifyingPaint
+        // Map fill attribute to color property
         if ('none' !== tag.attributes.fill) {
           color = getTagColor(tag as Tag, parents as Tag[]);
           if ('undefined' !== typeof color) {
