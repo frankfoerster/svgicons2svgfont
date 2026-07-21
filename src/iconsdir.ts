@@ -9,6 +9,7 @@ import {
 
 export interface SVGIconsDirStreamOptions {
   metadataProvider: ReturnType<typeof getMetadataService>;
+  log?: (...args: any[]) => void;
 }
 export type SVGIconStream = Readable & {
   metadata: Pick<FileMetadata, 'name' | 'unicode'>;
@@ -27,6 +28,7 @@ class SVGIconsDirStream extends Readable {
     super({ objectMode: true });
     this._options = {
       metadataProvider: options.metadataProvider || getMetadataService(options),
+      log: options.log || (() => {}),
     };
 
     if (dir instanceof Array) {
@@ -52,7 +54,7 @@ class SVGIconsDirStream extends Readable {
           }
           if (metadata) {
             if (metadata.renamed) {
-              console.warn(
+              this._options.log?.(
                 '➕ - Saved codepoint: ' +
                   'u' +
                   metadata.unicode[0]

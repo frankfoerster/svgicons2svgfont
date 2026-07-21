@@ -83,6 +83,7 @@ const options = program.opts();
 new SVGIconsDirStream(files, {
   startUnicode: options.startUnicode,
   prependUnicode: options.prependUnicode,
+  log: options.verbose ? console.log.bind(console) : undefined,
 })
   .pipe(
     new SVGIcons2SVGFontStream({
@@ -98,6 +99,7 @@ new SVGIconsDirStream(files, {
       descent: options.descent,
       ascent: options.ascent,
       metadata: options.metadata,
+      log: options.verbose ? console.log.bind(console) : undefined,
     })
   )
   .pipe(options.output ? createWriteStream(options.output) : stdout);
