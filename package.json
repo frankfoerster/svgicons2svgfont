@@ -1,6 +1,6 @@
 {
   "name": "@frankfoerster/svgicons2svgfont",
-  "version": "16.0.0",
+  "version": "16.1.0",
   "description": "Read a set of SVG icons and output a SVG font",
   "keywords": [
     "SVG",

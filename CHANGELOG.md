@@ -1,3 +1,9 @@
+# 16.1.0 (2026-07-21)
+
+### Features
+
+* migrate project configuration, migrate from jest to vitest, migrate from eslint to oxlint, replace dependencies, and set up github workflows ([4fbbf8e](https://github.com/frankfoerster/svgicons2svgfont/commit/4fbbf8e8deef117736afe99b936552263159c281))
+
 # [16.0.0](https://github.com/nfroidure/svgicons2svgfont/compare/v15.0.1...v16.0.0) (2026-03-27)
 
 
