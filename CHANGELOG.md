@@ -1,3 +1,9 @@
+# [16.2.0](https://github.com/frankfoerster/svgicons2svgfont/compare/v16.1.0...v16.2.0) (2026-07-21)
+
+### Features
+
+* add customizable logging function to improve debugging and traceability ([fb308cd](https://github.com/frankfoerster/svgicons2svgfont/commit/fb308cdcf57ec1b322f7965936dd86326b77c1d7))
+
 # 16.1.0 (2026-07-21)
 
 ### Features
