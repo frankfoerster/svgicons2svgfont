@@ -1,4 +1,4 @@
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from 'vitest';
 import { Readable } from 'node:stream';
 import fs from 'node:fs';
 import { mkdir } from 'node:fs/promises';
@@ -7,8 +7,9 @@ import { join } from 'node:path';
 import {
   SVGIcons2SVGFontStream,
   type SVGIcons2SVGFontStreamOptions,
-} from '../index.js';
-import { SVGIconsDirStream, type SVGIconStream } from '../iconsdir.js';
+  SVGIconsDirStream,
+  type SVGIconStream
+} from '../src';
 import streamtest from 'streamtest';
 import { BufferStream } from 'bufferstreams';
 

@@ -6,9 +6,9 @@ import { join } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 import { error } from 'node:console';
 import { readFile } from 'node:fs/promises';
-import { glob } from 'glob';
-import { SVGIcons2SVGFontStream } from '../dist/index.js';
-import { SVGIconsDirStream } from '../dist/iconsdir.js';
+import { globSync } from 'tinyglobby';
+import { SVGIcons2SVGFontStream } from '../dist/index.mjs';
+import { SVGIconsDirStream } from '../dist/iconsdir.mjs';
 
 const { version } = JSON.parse((await readFile(join(import.meta.dirname, '..', 'package.json'))).toString());
 
@@ -77,7 +77,7 @@ if (!program.args.length) {
   exit(1);
 }
 
-const files = program.args.flatMap((file) => glob.sync(file));
+const files = program.args.flatMap((file) => globSync(file.replace(/\\/g, '/')));
 const options = program.opts();
 
 new SVGIconsDirStream(files, {

@@ -1,7 +1,7 @@
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from 'vitest';
 import { writeFile, readFile, unlink } from 'node:fs/promises';
 import { promisify } from 'node:util';
-import { getMetadataService } from '../metadata.js';
+import { getMetadataService } from '../src';
 import { YError } from 'yerror';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -45,9 +45,10 @@ describe('Metadata service', () => {
       expect(
         await readFile(join('fixtures', 'results', 'uEA01-plop.svg')),
       ).toBeTruthy();
-      unlink(join('fixtures', 'results', 'uEA01-plop.svg'));
+      await unlink(join('fixtures', 'results', 'uEA01-plop.svg'));
       try {
         await readFile(join('fixtures', 'results', 'plop.svg'));
+        // noinspection ExceptionCaughtLocallyJS
         throw new YError('E_UNEXPECTED_SUCCESS');
       } catch (err) {
         expect((err as YError).code === 'E_UNEXPECTED_SUCCESS').toBeFalsy();
@@ -65,6 +66,7 @@ describe('Metadata service', () => {
           join('fixtures', 'results', 'plop.svg'),
         );
 
+        // noinspection ExceptionCaughtLocallyJS
         throw new YError('E_UNEXPECTED_SUCCESS');
       } catch (err) {
         expect(err).toBeTruthy();
@@ -72,6 +74,7 @@ describe('Metadata service', () => {
       }
       try {
         await readFile(join('fixtures', 'results', 'uEA02-plop.svg'));
+        // noinspection ExceptionCaughtLocallyJS
         throw new YError('E_UNEXPECTED_SUCCESS');
       } catch (err) {
         expect((err as YError).code === 'E_UNEXPECTED_SUCCESS').toBeFalsy();

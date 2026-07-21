@@ -1,5 +1,5 @@
-import { describe, test, expect } from '@jest/globals';
-import { fileSorter } from '../filesorter.js';
+import { describe, test, expect } from 'vitest';
+import { fileSorter } from '../src';
 
 describe('fileSorter', () => {
   test('should sort files per filename', () => {

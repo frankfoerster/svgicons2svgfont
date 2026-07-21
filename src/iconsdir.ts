@@ -3,12 +3,9 @@ import { createReadStream, readdir } from 'node:fs';
 import { fileSorter } from './filesorter.js';
 import {
   getMetadataService,
-  FileMetadata,
-  MetadataServiceOptions,
+  type FileMetadata,
+  type MetadataServiceOptions,
 } from './metadata.js';
-import debug from 'debug';
-
-const warn = debug('svgicons2svgfont');
 
 export interface SVGIconsDirStreamOptions {
   metadataProvider: ReturnType<typeof getMetadataService>;
@@ -55,7 +52,7 @@ class SVGIconsDirStream extends Readable {
           }
           if (metadata) {
             if (metadata.renamed) {
-              warn(
+              console.warn(
                 '➕ - Saved codepoint: ' +
                   'u' +
                   metadata.unicode[0]

@@ -1,4 +1,4 @@
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from 'vitest';
 import { readFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { exec } from 'node:child_process';
