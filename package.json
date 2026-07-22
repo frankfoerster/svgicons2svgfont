@@ -74,7 +74,7 @@
     "bufferstreams": "^6.0.1",
     "conventional-changelog": "^8.1.0",
     "conventional-changelog-angular": "^9.2.1",
-    "oxfmt": "^0.59.0",
+    "oxfmt": "^0.60.0",
     "oxlint": "^1.62.0",
     "streamtest": "^4.0.0",
     "tsdown": "^0.22.12",
